@@ -55,7 +55,4 @@ typedef enum tag_HDMI_CMD
 		HDMI_CMD_GET_HPD_STATUS,
 }__hdmi_cmd_t;
 
-extern struct snd_soc_dai codecchip_dai;
-extern struct snd_soc_codec_device soc_codec_dev_codecchip;
-
 #endif

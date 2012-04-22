@@ -127,8 +127,7 @@ static int sun4i_pcm_hw_params(struct snd_pcm_substream *substream,
 	struct sun4i_runtime_data *prtd = runtime->private_data;
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
 	unsigned long totbytes = params_buffer_bytes(params);
-	struct sun4i_dma_params *dma =
-					snd_soc_dai_get_dma_data(rtd->dai->cpu_dai, substream);
+	struct sun4i_dma_params *dma = snd_soc_dai_get_dma_data(rtd->cpu_dai, substream);
 
 	int ret = 0;
 	if (!dma)
@@ -377,14 +376,14 @@ static int sun4i_pcm_new(struct snd_card *card,
 	if (!card->dev->coherent_dma_mask)
 		card->dev->coherent_dma_mask = 0xffffffff;
 
-	if (dai->playback.channels_min) {
+	if (dai->driver->playback.channels_min) {
 		ret = sun4i_pcm_preallocate_dma_buffer(pcm,
 			SNDRV_PCM_STREAM_PLAYBACK);
 		if (ret)
 			goto out;
 	}
 
-	if (dai->capture.channels_min) {
+	if (dai->driver->capture.channels_min) {
 		ret = sun4i_pcm_preallocate_dma_buffer(pcm,
 			SNDRV_PCM_STREAM_CAPTURE);
 		if (ret)
@@ -394,23 +393,41 @@ static int sun4i_pcm_new(struct snd_card *card,
 	return ret;
 }
 
-struct snd_soc_platform sun4i_soc_platform_i2s = {
-		.name			=    "sun4i-audio",
-		.pcm_ops  =    &sun4i_pcm_ops,
-		.pcm_new	=		 sun4i_pcm_new,
-		.pcm_free	=		 sun4i_pcm_free_dma_buffers,
+static struct snd_soc_platform_driver sun4i_soc_platform_i2s = {
+	.ops		= &sun4i_pcm_ops,
+	.pcm_new	= sun4i_pcm_new,
+	.pcm_free	= sun4i_pcm_free_dma_buffers,
 };
-EXPORT_SYMBOL_GPL(sun4i_soc_platform_i2s);
+
+static int __devinit sun4i_soc_platform_i2s_probe(struct platform_device *pdev)
+{
+	return snd_soc_register_platform(&pdev->dev, &sun4i_soc_platform_i2s);
+}
+
+static int __devexit sun4i_soc_platform_i2s_remove(struct platform_device *pdev)
+{
+	snd_soc_unregister_platform(&pdev->dev);
+	return 0;
+}
+
+static struct platform_driver sun4i_soc_platform_i2s_driver = {
+	.driver = {
+		.name = "sun4i-audio",
+		.owner = THIS_MODULE,
+	},
+	.probe = sun4i_soc_platform_i2s_probe,
+	.remove = __devexit_p(sun4i_soc_platform_i2s_remove),
+};
 
 static int __init sun4i_soc_platform_i2s_init(void)
 {
-	return snd_soc_register_platform(&sun4i_soc_platform_i2s);
+	return platform_driver_register(&sun4i_soc_platform_i2s_driver);
 }
 module_init(sun4i_soc_platform_i2s_init);
 
 static void __exit sun4i_soc_platform_i2s_exit(void)
 {
-	snd_soc_unregister_platform(&sun4i_soc_platform_i2s);
+	platform_driver_unregister(&sun4i_soc_platform_i2s_driver);
 }
 module_exit(sun4i_soc_platform_i2s_exit);
 

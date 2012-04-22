@@ -334,8 +334,8 @@ static int sun4i_i2s_set_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
 }
 
 static int sun4i_i2s_hw_params(struct snd_pcm_substream *substream,
-																struct snd_pcm_hw_params *params,
-																struct snd_soc_dai *dai)
+			       struct snd_pcm_hw_params *params,
+			       struct snd_soc_dai *dai)
 {
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
 	struct sun4i_dma_params *dma_data;
@@ -347,7 +347,7 @@ static int sun4i_i2s_hw_params(struct snd_pcm_substream *substream,
 	else
 		dma_data = &sun4i_i2s_pcm_stereo_in;
 
-	snd_soc_dai_set_dma_data(rtd->dai->cpu_dai, substream, dma_data);
+	snd_soc_dai_set_dma_data(rtd->cpu_dai, substream, dma_data);
 
 	return 0;
 }
@@ -358,7 +358,7 @@ static int sun4i_i2s_trigger(struct snd_pcm_substream *substream,
 	int ret = 0;
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
 	struct sun4i_dma_params *dma_data =
-					snd_soc_dai_get_dma_data(rtd->dai->cpu_dai, substream);
+					snd_soc_dai_get_dma_data(rtd->cpu_dai, substream);
 
 	switch (cmd) {
 		case SNDRV_PCM_TRIGGER_START:
@@ -467,7 +467,7 @@ static int sun4i_i2s_set_clkdiv(struct snd_soc_dai *cpu_dai, int div_id, int div
 	return 0;
 }
 
-static int sun4i_i2s_probe(struct platform_device *pdev, struct snd_soc_dai *dai)
+static int sun4i_i2s_probe(struct snd_soc_dai *dai)
 {
 		int reg_val = 0;
 
@@ -539,8 +539,8 @@ static void iisregrestore(void)
 	writel(regsave[7], sun4i_iis.regs + SUN4I_TXCHMAP);
 }
 
-	static int sun4i_i2s_suspend(struct snd_soc_dai *cpu_dai)
-	{
+static int sun4i_i2s_suspend(struct snd_soc_dai *cpu_dai)
+{
 		u32 reg_val;
     	printk("[IIS]Entered %s\n", __func__);
 
@@ -595,7 +595,7 @@ static struct snd_soc_dai_ops sun4i_iis_dai_ops = {
 		.set_clkdiv = sun4i_i2s_set_clkdiv,
 		.set_sysclk = sun4i_i2s_set_sysclk,
 };
-struct snd_soc_dai sun4i_iis_dai = {
+static struct snd_soc_dai_driver sun4i_iis_dai_driver = {
 	.name 		= "sun4i-i2s",
 	.id 			= 0,
 	.probe 		= sun4i_i2s_probe,
@@ -613,6 +613,10 @@ struct snd_soc_dai sun4i_iis_dai = {
 		.formats = SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S20_3LE | SNDRV_PCM_FMTBIT_S24_LE,},
 	.ops = &sun4i_iis_dai_ops,
 };
+struct snd_soc_dai sun4i_iis_dai = {
+	.name 		= "sun4i-i2s",
+	.driver		= &sun4i_iis_dai_driver,
+};
 EXPORT_SYMBOL_GPL(sun4i_iis_dai);
 
 static int __init sun4i_i2s_init(void)
@@ -621,21 +625,15 @@ static int __init sun4i_i2s_init(void)
 	ret = script_parser_fetch("i2s_para","i2s_used", &i2s_used, sizeof(int));
 
 	if (ret)
-    {
+		printk("[I2S]sun4i_i2s_init fetch i2s using configuration failed\n");
 
-        printk("[I2S]sun4i_i2s_init fetch i2s using configuration failed\n");
-    }
-
-    if(i2s_used)
-    {
-    	i2s_handle = gpio_request_ex("i2s_para", NULL);
-		return snd_soc_register_dai(&sun4i_iis_dai);
-	}
-	else
-	{
+	if (i2s_used) {
+		i2s_handle = gpio_request_ex("i2s_para", NULL);
+		return snd_soc_register_dai(&sun4i_iis_dai, &sun4i_iis_dai_driver);
+	} else {
 		printk("[I2S]sun4i_i2s cannot find any using configuration for controllers, return directly!\n");
-        return 0;
 	}
+	return 0;
 }
 module_init(sun4i_i2s_init);
 

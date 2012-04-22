@@ -77,6 +77,7 @@ static int codecchip_set_dai_fmt(struct snd_soc_dai *codec_dai,
 {
 	return 0;
 }
+
 struct snd_soc_dai_ops codecchip_dai_ops = {
 		.startup = codecchip_startup,
 		.shutdown = codecchip_shutdown,
@@ -86,7 +87,8 @@ struct snd_soc_dai_ops codecchip_dai_ops = {
 		.set_clkdiv = codecchip_set_dai_clkdiv,
 		.set_fmt = codecchip_set_dai_fmt,
 };
-struct snd_soc_dai codecchip_dai = {
+
+static struct snd_soc_dai_driver codecchip_dai_driver = {
 	.name = "codecchip",
 	/* playback capabilities */
 	.playback = {
@@ -99,17 +101,13 @@ struct snd_soc_dai codecchip_dai = {
 	/* pcm operations */
 	.ops = &codecchip_dai_ops,
 };
-EXPORT_SYMBOL(codecchip_dai);
 
-static int codecchip_soc_probe(struct platform_device *pdev)
+static struct snd_soc_codec_driver soc_codec_codechip_dev = {
+	.name = "codecchip-codec",
+};
+
+static int codecchip_soc_probe(struct snd_soc_codec *codec)
 {
-	struct snd_soc_device *socdev = platform_get_drvdata(pdev);
-	struct snd_soc_codec *codec;
-	int ret = -ENOMEM;
-
-	(socdev->card->codec) = kzalloc(sizeof(struct snd_soc_codec), GFP_KERNEL);
-	if (socdev->card->codec == NULL)
-		return ret;
 
 	codec = socdev->card->codec;
 
@@ -127,8 +125,7 @@ static int codecchip_soc_probe(struct platform_device *pdev)
 		goto pcm_err;
 	}
 
-	return 0;
-
+	return snd_soc_register_dai(&pdev->dev, &codecchip_dai_driver);
 
 pcm_err:
 	kfree(codec);
@@ -144,14 +141,18 @@ static int codecchip_soc_remove(struct platform_device *pdev)
 
 	kfree(codec);
 
+	snd_soc_unregister_dai(&pdev->dev);
 	return 0;
 }
 
-struct snd_soc_codec_device soc_codec_dev_codecchip = {
+static struct platform_driver soc_codec_dev_codecchip = {
+	.driver = {
+		.name = "codeacchip",
+		.owner = THIS_MODULE,
+	},
 	.probe =        codecchip_soc_probe,
 	.remove =       codecchip_soc_remove,
 };
-EXPORT_SYMBOL_GPL(soc_codec_dev_codecchip);
 
 static int __init codecchip_init(void)
 {
@@ -159,19 +160,14 @@ static int __init codecchip_init(void)
 	ret = script_parser_fetch("i2s_para","i2s_used", &i2s_used, sizeof(int));
 
 	if (ret)
-    {
-        printk("[I2S]codecchip_init fetch i2s using configuration failed\n");
-    }
+		printk("[I2S]codecchip_init fetch i2s using configuration failed\n");
 
-    if(i2s_used)
-    {
-		return snd_soc_register_dai(&codecchip_dai);
-	}
+	if(i2s_used)
+		return platform_driver_register(&soc_codec_dev_codecchip);
 	else
-	{
 		printk("[I2S]codecchip cannot find any using configuration for controllers, return directly!\n");
-        return 0;
-	}
+
+	return 0;
 }
 module_init(codecchip_init);
 
@@ -180,7 +176,7 @@ static void __exit codecchip_exit(void)
 	if(i2s_used)
 	{
 		i2s_used = 0;
-		snd_soc_unregister_dai(&codecchip_dai);
+		platform_driver_unregister(&soc_codec_dev_codecchip);
 	}
 }
 module_exit(codecchip_exit);

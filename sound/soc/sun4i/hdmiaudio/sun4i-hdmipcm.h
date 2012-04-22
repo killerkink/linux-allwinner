@@ -35,7 +35,6 @@ enum sun4i_dma_buffresult {
 };
 
 /* platform data */
-extern struct snd_soc_platform sun4i_soc_platform_hdmiaudio;
 extern int sw_dma_enqueue(unsigned int channel, void *id,
 			dma_addr_t data, int size);
 

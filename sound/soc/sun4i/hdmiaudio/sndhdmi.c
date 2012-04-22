@@ -97,8 +97,7 @@ static int sndhdmi_set_dai_fmt(struct snd_soc_dai *codec_dai,
 	return 0;
 }
 
-//codec dai operation
-struct snd_soc_dai_ops sndhdmi_dai_ops = {
+static struct snd_soc_dai_ops sndhdmi_dai_ops = {
 		.startup = sndhdmi_startup,
 		.shutdown = sndhdmi_shutdown,
 		.hw_params = sndhdmi_hw_params,
@@ -108,8 +107,7 @@ struct snd_soc_dai_ops sndhdmi_dai_ops = {
 		.set_fmt = sndhdmi_set_dai_fmt,
 };
 
-//codec dai
-struct snd_soc_dai sndhdmi_dai = {
+static struct snd_soc_dai_driver sndhdmi_dai_driver = {
 	.name = "SNDHDMI",
 	/* playback capabilities */
 	.playback = {
@@ -122,7 +120,6 @@ struct snd_soc_dai sndhdmi_dai = {
 	/* pcm operations */
 	.ops = &sndhdmi_dai_ops,
 };
-EXPORT_SYMBOL(sndhdmi_dai);
 
 static int sndhdmi_soc_probe(struct platform_device *pdev)
 {
@@ -150,8 +147,7 @@ static int sndhdmi_soc_probe(struct platform_device *pdev)
 		goto pcm_err;
 	}
 
-	return 0;
-
+	return snd_soc_register_dai(&pdev->dev, &sndhdmi_dai_driver);
 
 pcm_err:
 	kfree(codec);
@@ -169,11 +165,10 @@ static int sndhdmi_soc_remove(struct platform_device *pdev)
 	return 0;
 }
 
-struct snd_soc_codec_device soc_codec_dev_sndhdmi = {
+static struct snd_soc_codec_driver soc_codec_sndhdmi_dev = {
 	.probe =        sndhdmi_soc_probe,
 	.remove =       sndhdmi_soc_remove,
 };
-EXPORT_SYMBOL_GPL(soc_codec_dev_sndhdmi);
 
 static int __init sndhdmi_init(void)
 {

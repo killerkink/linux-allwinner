@@ -16,7 +16,4 @@
 #define SNDHDMI_H
 #include <linux/drv_hdmi.h>
 
-extern struct snd_soc_dai sndhdmi_dai;
-extern struct snd_soc_codec_device soc_codec_dev_sndhdmi;
-
 #endif

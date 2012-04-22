@@ -641,16 +641,31 @@ static struct snd_soc_dai_driver sun4i_hdmiaudio_dai_driver = {
 		.formats = SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S20_3LE | SNDRV_PCM_FMTBIT_S24_LE,},
 	.ops = &sun4i_hdmiaudio_dai_ops,
 };
-struct snd_soc_dai sun4i_hdmiaudio_dai = {
-	.name	= "sun4i-hdmiaudio",
-	.id	= 0,
-	.driver	= &sun4i_hdmiaudio_dai_driver,
+
+static int __devinit sun4i_hdmiaudio_platform_probe(struct platform_device *pdev)
+{
+	return snd_soc_register_dai(&pdev->dev, &sun4i_hdmiaudio_dai_driver);
+}
+
+static int __devexit sun4i_hdmiaudio_platform_remove(struct platform_device *pdev)
+{
+	snd_soc_unregister_dai(&pdev->dev);
+	return 0;
+}
+
+static struct platform_driver sun4i_hdmiaudio_driver = {
+	.driver = {
+		.name = "sun4i-hdmiaudio",
+		.owner = THIS_MODULE,
+	},
+
+	.probe = sun4i_hdmiaudio_platform_probe,
+	.remove = __devexit_p(sun4i_hdmiaudio_platform_remove),
 };
-EXPORT_SYMBOL_GPL(sun4i_hdmiaudio_dai);
 
 static int __init sun4i_hdmiaudio_init(void)
 {
-	return snd_soc_register_dai(&sun4i_hdmiaudio_dai);
+	return platform_driver_register(&sun4i_hdmiaudio_driver);
 }
 module_init(sun4i_hdmiaudio_init);
 
@@ -668,7 +683,7 @@ static void __exit sun4i_hdmiaudio_exit(void)
 	//release apbclk
 	clk_put(hdmiaudio_apbclk);
 
-	snd_soc_unregister_dai(&sun4i_hdmiaudio_dai);
+	platform_driver_unregister(&sun4i_hdmiaudio_driver);
 }
 module_exit(sun4i_hdmiaudio_exit);
 

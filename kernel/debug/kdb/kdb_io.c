@@ -30,6 +30,7 @@
 char kdb_prompt_str[CMD_BUFLEN];
 
 int kdb_trap_printk;
+EXPORT_SYMBOL_GPL(kdb_trap_printk);
 
 static void kgdb_transition_check(char *buffer)
 {
@@ -811,6 +812,7 @@ kdb_print_out:
 	preempt_enable();
 	return retlen;
 }
+EXPORT_SYMBOL_GPL(vkdb_printf);
 
 int kdb_printf(const char *fmt, ...)
 {

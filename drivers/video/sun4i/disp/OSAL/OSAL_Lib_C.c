@@ -21,7 +21,11 @@
 
 #include "OSAL.h"
 
+#ifdef CONFIG_KGDB_KDB
+#include <linux/kdb.h>
+
 extern int kdb_trap_printk;
+#endif
 
 /* 普通内存分配 */
 void * OSAL_malloc(__u32 Size)

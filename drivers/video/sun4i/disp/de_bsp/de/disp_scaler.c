@@ -165,11 +165,7 @@ __s32 Scaler_3d_sw_para_to_reg(__u32 type, __u32 mode, __bool b_out_interlace)
 	return DIS_FAIL;
 }
 
-#ifdef __LINUX_OSAL__
 __s32 Scaler_event_proc(__s32 irq, void *parg)
-#else
-__s32 Scaler_event_proc(void *parg)
-#endif
 {
 	__u8 fe_intflags, be_intflags;
 	__u32 sel = (__u32) parg;
@@ -187,7 +183,6 @@ __s32 Scaler_event_proc(void *parg)
 
 	if (fe_intflags & DE_WB_END_IE) {
 		DE_SCAL_DisableINT(sel, DE_FE_INTEN_ALL);
-#ifdef __LINUX_OSAL__
 		if (gdisp.scaler[sel].b_scaler_finished == 1 &&
 		    &gdisp.scaler[sel].scaler_queue != NULL) {
 			gdisp.scaler[sel].b_scaler_finished = 2;
@@ -195,7 +190,6 @@ __s32 Scaler_event_proc(void *parg)
 		} else {
 			__wrn("not scaler %d begin in DRV_scaler_finish\n", sel);
 		}
-#endif
 	}
 
 	return OSAL_IRQ_RETURN;
@@ -208,14 +202,8 @@ __s32 Scaler_Init(__u32 sel)
 
 	if (sel == 0) {
 		OSAL_RegISR(INTC_IRQNO_SCALER0, 0, Scaler_event_proc, (void *)sel, 0, 0);
-#ifndef __LINUX_OSAL__
-		OSAL_InterruptEnable(INTC_IRQNO_SCALER0);
-#endif
 	} else if (sel == 1) {
 		OSAL_RegISR(INTC_IRQNO_SCALER1, 0, Scaler_event_proc, (void *)sel, 0, 0);
-#ifndef __LINUX_OSAL__
-		OSAL_InterruptEnable(INTC_IRQNO_SCALER1);
-#endif
 	}
 	return DIS_SUCCESS;
 }
@@ -916,11 +904,6 @@ __s32 BSP_disp_scaler_start(__u32 handle, __disp_scaler_para_t * para)
 	DE_SCAL_Start(sel);
 	DE_SCAL_Set_Reg_Rdy(sel);
 
-#ifndef __LINUX_OSAL__
-	DE_SCAL_Writeback_Enable(sel);
-	while (!(DE_SCAL_QueryINT(sel) & DE_WB_END_IE)) {
-	}
-#else
 	{
 		long timeout = (100 * HZ) / 1000;	//100ms
 
@@ -937,7 +920,6 @@ __s32 BSP_disp_scaler_start(__u32 handle, __disp_scaler_para_t * para)
 			return -1;
 		}
 	}
-#endif
 	DE_SCAL_Reset(sel);
 	DE_SCAL_Writeback_Disable(sel);
 
@@ -1071,10 +1053,6 @@ __s32 BSP_disp_capture_screen(__u32 sel, __disp_capture_screen_para_t * para)
 	DE_SCAL_Start(scaler_idx);
 
 	DE_INF("capture begin\n");
-#ifndef __LINUX_OSAL__
-	while (!(DE_SCAL_QueryINT(scaler_idx) & DE_WB_END_IE)) {
-	}
-#else
 	{
 		long timeout = (100 * HZ) / 1000;	//100ms
 
@@ -1091,7 +1069,6 @@ __s32 BSP_disp_capture_screen(__u32 sel, __disp_capture_screen_para_t * para)
 			return -1;
 		}
 	}
-#endif
 	DE_SCAL_Reset(scaler_idx);
 	Scaler_Release(scaler_idx, FALSE);
 	if (BSP_disp_get_output_type(sel) == DISP_OUTPUT_TYPE_NONE) {

@@ -197,11 +197,9 @@ void Lcd_Panel_Parameter_Check(__u32 sel)
 			reg_value = sys_get_wvalue(image_base_addr + 0x800);
 			sys_put_wvalue(image_base_addr + 0x800, reg_value & 0xfffff0ff);	//close all layer
 
-#ifdef __LINUX_OSAL__
 			LCD_delay_ms(2000);
 			sys_put_wvalue(image_base_addr + 0x804, 0x00000000);	//set background color
 			sys_put_wvalue(image_base_addr + 0x800, reg_value);	//open layer
-#endif
 			OSAL_PRINTF("*** Try new parameters,you can make it pass!\n");
 		}
 		OSAL_PRINTF("*** LCD Panel Parameter Check End\n");
@@ -577,27 +575,15 @@ void LCD_get_sys_config(__u32 sel, __disp_lcd_cfg_t * lcd_cfg)
 
 void LCD_delay_ms(__u32 ms)
 {
-#ifdef __LINUX_OSAL__
 	__u32 timeout = ms * HZ / 1000;
 
 	set_current_state(TASK_INTERRUPTIBLE);
 	schedule_timeout(timeout);
-#endif
-#ifdef __BOOT_OSAL__
-	wBoot_timer_delay(ms);	//assume cpu runs at 1000Mhz,10 clock one cycle
-#endif
 }
 
 void LCD_delay_us(__u32 us)
 {
-#ifdef __LINUX_OSAL__
 	udelay(us);
-#endif
-#ifdef __BOOT_OSAL__
-	volatile __u32 time;
-
-	for (time = 0; time < (us * 700 / 10); time++) ;	//assume cpu runs at 700Mhz,10 clock one cycle
-#endif
 }
 
 void LCD_OPEN_FUNC(__u32 sel, LCD_FUNC func, __u32 delay)
@@ -1001,11 +987,7 @@ __s32 Disp_lcdc_pin_cfg(__u32 sel, __disp_output_type_t out_type, __u32 bon)
 	return DIS_SUCCESS;
 }
 
-#ifdef __LINUX_OSAL__
 __s32 Disp_lcdc_event_proc(int irq, void *parg)
-#else
-__s32 Disp_lcdc_event_proc(void *parg)
-#endif
 {
 	__u32 lcdc_flags;
 	__u32 sel = (__u32) parg;
@@ -1035,16 +1017,8 @@ __s32 Disp_lcdc_init(__u32 sel)
 
 	if (sel == 0) {
 		OSAL_RegISR(INTC_IRQNO_LCDC0, 0, Disp_lcdc_event_proc, (void *)sel, 0, 0);
-#ifndef __LINUX_OSAL__
-		OSAL_InterruptEnable(INTC_IRQNO_LCDC0);
-		LCD_get_panel_funs_0(&lcd_panel_fun[sel]);
-#endif
 	} else {
 		OSAL_RegISR(INTC_IRQNO_LCDC1, 0, Disp_lcdc_event_proc, (void *)sel, 0, 0);
-#ifndef __LINUX_OSAL__
-		OSAL_InterruptEnable(INTC_IRQNO_LCDC1);
-		LCD_get_panel_funs_1(&lcd_panel_fun[sel]);
-#endif
 	}
 
 	if (gdisp.screen[sel].lcd_cfg.lcd_used) {
@@ -1450,9 +1424,7 @@ __s32 BSP_disp_lcd_open_after(__u32 sel)
 	gdisp.screen[sel].status |= LCD_ON;
 	gdisp.screen[sel].output_type = DISP_OUTPUT_TYPE_LCD;
 	Lcd_Panel_Parameter_Check(sel);
-#ifdef __LINUX_OSAL__
 	Display_set_fb_timming(sel);
-#endif
 	return DIS_SUCCESS;
 }
 
@@ -1648,7 +1620,6 @@ __u32 BSP_disp_get_cur_line(__u32 sel)
 	return line;
 }
 
-#ifdef __LINUX_OSAL__
 EXPORT_SYMBOL(LCD_OPEN_FUNC);
 EXPORT_SYMBOL(LCD_CLOSE_FUNC);
 EXPORT_SYMBOL(LCD_get_reg_bases);
@@ -1674,4 +1645,3 @@ EXPORT_SYMBOL(pwm_set_para);
 EXPORT_SYMBOL(pwm_get_para);
 EXPORT_SYMBOL(pwm_set_duty_ns);
 EXPORT_SYMBOL(pwm_enable);
-#endif

@@ -21,13 +21,7 @@
 #ifndef  __OSAL_INT_H__
 #define  __OSAL_INT_H__
 
-#define __LINUX_OSAL__
-
-#ifndef __LINUX_OSAL__
-typedef __s32(*ISRCallback) (void *);
-#else
 typedef int (*ISRCallback) (int, void *);
-#endif
 
 /*
 *******************************************************************************

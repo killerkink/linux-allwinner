@@ -179,7 +179,6 @@ __s32 BSP_disp_tv_open(__u32 sel)
 		Disp_TVEC_Open(sel);
 
 		Disp_Switch_Dram_Mode(DISP_OUTPUT_TYPE_TV, tv_mod);
-#ifdef __LINUX_OSAL__
 		{
 			user_gpio_set_t gpio_info[1];
 			__hdle gpio_pa_shutdown;
@@ -200,16 +199,13 @@ __s32 BSP_disp_tv_open(__u32 sel)
 				}
 			}
 		}
-#endif
 		gdisp.screen[sel].b_out_interlace = Disp_get_screen_scan_mode(tv_mod);
 		gdisp.screen[sel].status |= TV_ON;
 		gdisp.screen[sel].lcdc_status |= LCDC_TCON1_USED;
 		gdisp.screen[sel].output_type = DISP_OUTPUT_TYPE_TV;
 
 		Disp_set_out_interlace(sel);
-#ifdef __LINUX_OSAL__
 		Display_set_fb_timming(sel);
-#endif
 	}
 	return DIS_SUCCESS;
 }
@@ -225,7 +221,6 @@ __s32 BSP_disp_tv_close(__u32 sel)
 		image_clk_off(sel);
 		lcdc_clk_off(sel);
 
-#ifdef __LINUX_OSAL__
 		{
 			user_gpio_set_t gpio_info[1];
 			__hdle gpio_pa_shutdown;
@@ -246,7 +241,6 @@ __s32 BSP_disp_tv_close(__u32 sel)
 				}
 			}
 		}
-#endif
 		gdisp.screen[sel].b_out_interlace = 0;
 		gdisp.screen[sel].status &= TV_OFF;
 		gdisp.screen[sel].lcdc_status &= LCDC_TCON1_USED_MASK;

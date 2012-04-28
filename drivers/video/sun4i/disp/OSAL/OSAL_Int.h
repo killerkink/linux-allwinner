@@ -24,9 +24,9 @@
 #define __LINUX_OSAL__
 
 #ifndef __LINUX_OSAL__
-typedef __s32 (*ISRCallback)( void *);
+typedef __s32(*ISRCallback) (void *);
 #else
-typedef int (*ISRCallback)( int, void* );
+typedef int (*ISRCallback) (int, void *);
 #endif
 
 /*
@@ -54,11 +54,8 @@ typedef int (*ISRCallback)( int, void* );
 *******************************************************************************
 */
 int OSAL_RegISR(__u32 IrqNo,
-				__u32 Flags,
-				ISRCallback Handler,
-				void *pArg,
-				__u32 DataSize,
-				__u32 Prio);
+		__u32 Flags,
+		ISRCallback Handler, void *pArg, __u32 DataSize, __u32 Prio);
 
 /*
 *******************************************************************************
@@ -122,6 +119,4 @@ void OSAL_InterruptEnable(__u32 IrqNo);
 */
 void OSAL_InterruptDisable(__u32 IrqNo);
 
-#endif   //__OSAL_INT_H__
-
-
+#endif				//__OSAL_INT_H__

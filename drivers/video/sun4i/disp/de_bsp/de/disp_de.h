@@ -4,9 +4,9 @@
 
 #include "disp_display_i.h"
 
-extern __hdle   h_tvahbclk;
-extern __hdle   h_tv1clk;
-extern __hdle   h_tv2clk;
+extern __hdle h_tvahbclk;
+extern __hdle h_tv1clk;
+extern __hdle h_tv2clk;
 
 #ifdef __LINUX_OSAL__
 __s32 Scaler_event_proc(int irq, void *parg);

@@ -4,7 +4,6 @@
 
 #include "disp_display_i.h"
 
-
 __s32 Disp_lcdc_init(__u32 sel);
 __s32 Disp_lcdc_exit(__u32 sel);
 
@@ -21,7 +20,7 @@ __u32 tv_mode_to_height(__disp_tv_mode_t mode);
 __u32 vga_mode_to_width(__disp_vga_mode_t mode);
 __u32 vga_mode_to_height(__disp_vga_mode_t mode);
 
-void LCD_delay_ms(__u32 ms) ;
+void LCD_delay_ms(__u32 ms);
 void LCD_delay_us(__u32 ns);
 
 extern void LCD_get_panel_funs_0(__lcd_panel_fun_t * fun);

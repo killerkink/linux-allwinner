@@ -2,19 +2,17 @@
 *********************************************************************************************************
 * File    : dram_i.h
 * By      : Berg.Xing
-* Date    : 2011-06-01
-* Descript: dram csp for AW1623 chipset;
-* Update  : date          auther      ver     notes
-*     2011-06-01      			Berg        1.0     create file
-*			2011-07-01			Berg        1.1     add extern function description
-*			2011-08-05			Berg		1.2		add CPU_CFIG_REG in timer module
+* Date    : 2011-12-07
+* Descript: dram for AW1625 chipset
+* Update  : date                auther      ver     notes
+*			2011-12-07			Berg        1.0     create file from aw1623
 *********************************************************************************************************
 */
 #ifndef __DRAM_I_H__
 #define __DRAM_I_H__
 
 #include <mach/dram.h>
-#include "./../standby_i.h"
+#include "standby_i.h"
 
 #define DRAMC_IO_BASE       SW_VA_DRAM_IO_BASE
 #define DRAMC_MEM_SIZE      0x400
@@ -75,7 +73,7 @@
 #define DRAM_CCM_AHB_GATE_REG     (DRAM_CCM_BASE + 0x60)
 #define DRAM_CCM_GPS_CLK_REG      (DRAM_CCM_BASE + 0xd0)
 #define DRAM_CCM_SDRAM_CLK_REG    (DRAM_CCM_BASE + 0x100)
-
+#define DRAM_CCM_MUS_CLK_REG      (DRAM_CCM_BASE + 0x15c)
 
 //TIMER register for system
 #define DRAM_TIMER_BASE     SW_VA_TIMERC_IO_BASE

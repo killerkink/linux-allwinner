@@ -1572,9 +1572,9 @@ static int axp_battery_probe(struct platform_device *pdev)
     axp_set_bits(charger->master, AXP20_CHARGE_VBUS, 0x03);
 
 
-  /* set lowe power warning/shutdown voltage*/
-  var = script_parser_fetch("pmu_para", "pmu_suspendpwroff_vol", &pmu_suspendpwroff_vol, sizeof(int));
-  if (var)
+  /* set low power warning/shutdown voltage*/
+  ret = script_parser_fetch("pmu_para", "pmu_suspendpwroff_vol", &pmu_suspendpwroff_vol, sizeof(int));
+  if (ret != SCRIPT_PARSER_OK)
   {
      printk("[AXP]axp driver uning configuration failed(%d)\n", __LINE__);
      pmu_suspendpwroff_vol = 3500;
